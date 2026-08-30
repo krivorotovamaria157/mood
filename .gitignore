@@ -174,3 +174,22 @@ cython_debug/
 *.swp
 *.swo
 *~
+# --- Python (moodbot) ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local bot data
+*.sqlite3
+*.db

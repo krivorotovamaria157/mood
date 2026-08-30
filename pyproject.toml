@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moodbot"
+version = "0.1.0"
+description = "Telegram bot that turns a free-form description of symptoms, situation and emotions into a structured, non-diagnostic reflection."
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.13,<4",
+    "anthropic>=1.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+moodbot = "moodbot.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["error::DeprecationWarning:moodbot.*"]
+addopts = "--strict-markers"
+
+[tool.coverage.run]
+source = ["src/moodbot"]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+]
