@@ -6,7 +6,8 @@
 ## Status
 
 **Задача выполнена.** Все 10 этапов закрыты, все пункты Definition of done
-отмечены. Suite зелёный: **224 passed**, покрытие `src/moodbot` — **97 %**.
+отмечены, плюс доработка после приёмки (шаг 11). Suite зелёный:
+**227 passed**, покрытие `src/moodbot` — **98 %**.
 
 ## Environment
 
@@ -149,6 +150,31 @@ TOTAL  710 stmts  16 miss  136 branch  9 brpart  97%
 
 Непокрытыми остались только пути, поднимающие сеть: `bot/app.run`,
 `build_bot` и ветка long polling в `__main__`.
+
+### 11 — запуск и скилл деплоя (после приёмки) — ✅
+
+Живой прогон пути запуска фейковым токеном подтвердил, что сборка работает
+(config → репозиторий → анализатор → бот → диспетчер → polling), но пользователь
+видел голый traceback `TelegramUnauthorizedError`.
+
+Добавлена обработка в `__main__`: коды возврата 3 (токен отклонён) и 4 (сеть
+недоступна) с внятным текстом, плюс три теста на эти ветки.
+
+```
+python -m moodbot   # с заведомо неверным токеном
+Telegram rejected the token.
+Check TELEGRAM_BOT_TOKEN in your .env: it should look like
+  123456789:AAE...   (get it from @BotFather, /mybots -> API Token)
+exit=3
+
+pytest --cov=src/moodbot -q
+TOTAL  716 stmts  10 miss  136 branch  8 brpart  98%
+227 passed in 14.23s
+```
+
+Создан `.claude/skills/deploy-telegram-bot/` — порядок выката новой версии:
+pre-flight → тестовый бот → промоушен → откат, с ручным чек-листом в клиенте
+Telegram и правилом «один токен — один процесс».
 
 ## Next steps
 

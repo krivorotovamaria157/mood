@@ -180,3 +180,61 @@ def test_router_registers_the_expected_handlers(handlers):
 
     router = build_router(handlers)
     assert len(router.message.handlers) == 6
+
+
+# --- startup failure messages ---------------------------------------------
+
+
+def test_bad_token_produces_a_readable_message_not_a_traceback(
+    monkeypatch, capsys, tmp_path
+):
+    """The most common first-run failure must explain itself."""
+    from aiogram.exceptions import TelegramUnauthorizedError
+
+    from moodbot import __main__ as cli
+
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", TOKEN)
+    monkeypatch.setenv("MOODBOT_DB_PATH", str(tmp_path / "bad_token.sqlite3"))
+
+    async def _raise(_settings):
+        raise TelegramUnauthorizedError(method=None, message="Unauthorized")
+
+    monkeypatch.setattr("moodbot.bot.app.run", _raise)
+
+    assert cli.main([]) == 3
+
+    err = capsys.readouterr().err
+    assert "@BotFather" in err
+    assert "Traceback" not in err
+
+
+def test_network_failure_produces_a_readable_message(monkeypatch, capsys, tmp_path):
+    from aiogram.exceptions import TelegramNetworkError
+
+    from moodbot import __main__ as cli
+
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", TOKEN)
+    monkeypatch.setenv("MOODBOT_DB_PATH", str(tmp_path / "netfail.sqlite3"))
+
+    async def _raise(_settings):
+        raise TelegramNetworkError(method=None, message="connection refused")
+
+    monkeypatch.setattr("moodbot.bot.app.run", _raise)
+
+    assert cli.main([]) == 4
+    assert "Telegram" in capsys.readouterr().err
+
+
+def test_keyboard_interrupt_exits_cleanly(monkeypatch, capsys, tmp_path):
+    from moodbot import __main__ as cli
+
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", TOKEN)
+    monkeypatch.setenv("MOODBOT_DB_PATH", str(tmp_path / "interrupt.sqlite3"))
+
+    async def _raise(_settings):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr("moodbot.bot.app.run", _raise)
+
+    assert cli.main([]) == 0
+    assert "Stopped" in capsys.readouterr().err

@@ -62,12 +62,30 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 0
 
+    from aiogram.exceptions import TelegramNetworkError, TelegramUnauthorizedError
+
     from .bot.app import run
 
     try:
         asyncio.run(run(settings))
     except KeyboardInterrupt:
         print("Stopped.", file=sys.stderr)
+    except TelegramUnauthorizedError:
+        # By far the most common first-run failure — a traceback here helps nobody.
+        print(
+            "Telegram rejected the token.\n"
+            "Check TELEGRAM_BOT_TOKEN in your .env: it should look like\n"
+            "  123456789:AAE...   (get it from @BotFather, /mybots -> API Token)",
+            file=sys.stderr,
+        )
+        return 3
+    except TelegramNetworkError as exc:
+        print(
+            f"Could not reach Telegram ({type(exc).__name__}). "
+            "Check the network or proxy settings and try again.",
+            file=sys.stderr,
+        )
+        return 4
     return 0
 
 

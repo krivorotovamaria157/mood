@@ -193,3 +193,8 @@ htmlcov/
 # Local bot data
 *.sqlite3
 *.db
+
+# Local env files for the test bot
+.env.test
+.env.*
+!.env.example
